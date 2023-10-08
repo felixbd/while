@@ -5,10 +5,10 @@ module WhileParser
   ,WhileAST(..)
   ,Expression(..)
   ,tokenize
+  ,readFileContent
   ) where
 
-import System.IO
-import Control.Monad
+-- import System.IO
 import Control.Applicative
 import Data.Char (isDigit, isAlpha)
 import Data.List (stripPrefix)
@@ -107,7 +107,7 @@ tokenizeHelper cx@(c:cs) ln
   | c == '!', Just rest <- stripPrefix "=" cs = MetaToken ln 0 NotEqualToken : tokenizeHelper rest ln
   | c == '+' = MetaToken ln 0 PlusToken : tokenizeHelper cs ln
   | c == '-' = MetaToken ln 0 MinusToken : tokenizeHelper cs ln
-  | otherwise = error $ "Ungültiges Zeichen: " ++ [c]
+  | otherwise = error $ "Invalid char: " ++ [c] ++ " in line: " ++ show ln
   where
     keywordToken :: String -> String -> [MetaToken]
     keywordToken token rest = case token of
@@ -123,9 +123,7 @@ tokenParser t = Parser helper
   where
     -- helper :: [Token] -> Maybe ([Token], Token)
     helper [] = Nothing
-    helper (x:xs)
-      | x == t = Just (xs, t)
-      | otherwise = Nothing
+    helper (x:xs) = if x == t then Just (xs, t) else Nothing
 
 
 tokenListParser :: [Token] -> Parser [Token]
@@ -133,5 +131,7 @@ tokenListParser = sequenceA . map tokenParser
 
 
 -- Read the content of a file and return it as a list of its lines with numbering
-readFileContents :: FilePath -> IO [(LineNum, String)]
-readFileContents filePath = readFile filePath >>= \c -> return $ zip [1..] (lines c)
+readFileContent :: FilePath -> IO [(LineNum, String)]
+readFileContent filePath = readFile filePath >>= \c -> return $ zip [1..] (lines c)
+
+--
