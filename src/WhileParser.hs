@@ -8,18 +8,16 @@ module WhileParser
   ,readFileContent
   ) where
 
--- import System.IO
 import Control.Applicative
 import Data.Char (isDigit, isAlpha)
 import Data.List (stripPrefix)
-
 
 {-|
 Tokens for representing the while-language as haskell data types
 relevant for the parsers tokenizer to generate the ast (Abstract Syntacs Tree) Tokens
 -}
-data Token = VarToken String  -- e.g. x_1 (has to start with letter - can contain digit and '_')
-           | ConstToken Int   -- e.g. 5 (positive int with 0 only)
+data Token = VarToken { getVarName :: String }  -- e.g. x_1 (has to start with letter - can contain digit and '_')
+           | ConstToken { getConstInt :: Int }   -- e.g. 5 (positive int with 0 only)
            | AssignToken      -- :=
            | SemicolonToken   -- ; (for sequential commands)
            | NotEqualToken    -- !=
@@ -38,16 +36,31 @@ data MetaToken = MetaToken { getLineNumber :: LineNum,
                              getToken :: Token
                            } deriving (Show, Eq)
 
+-- | Data type to represent the WhileAST Abstract Syntax Tree (AST).
+data WhileAST = Assignment String Expression    --  Assignment of a variable with an expression
+              | Sequential WhileAST WhileAST    --  Sequential composition of two statements
+              | While Expression WhileAST       --  While loop with a condition and a body
+              | Loop Expression WhileAST        --  Normal loop with a fix iteration number and a body
+              | Skip                            --  A skip statement, representing no operation
+              deriving (Show, Eq)
+
+-- | Data type to represent expressions within WhileAST.
+data Expression = Constant { getConst :: Int }                    --  Integer constant
+                | Variable { getVar :: String }                 --  Variable reference
+                | Add Expression Expression       --  Addition operation
+                | Subtract Expression Expression  --  Subtraction operation
+                | Neq Expression Expression       --  != operation
+                deriving (Show, Eq)
+
 
 -- TODO(felix): upgrade current verwion to handel errors better
 --  newtype TokenParser a = TokenParser {
 --          runTokenParser :: [MetaToken] -> Either (LineNum, ColNum, String) ([MetaToken], a)
 --    }
-newtype Parser a = Parser { runParser :: [Token] -> Maybe ([Token], a) }
-
+newtype Parser a = Parser { runParser :: [MetaToken] -> Maybe ([MetaToken], a) }
 
 instance Functor Parser where
-  -- fmap = (<$>)
+  -- fmap for (<$>)
   fmap f (Parser p) = Parser helper
     where
       -- helper :: [Token] -> Maybe ([Token], Token)
@@ -69,24 +82,6 @@ instance Alternative Parser where
   (Parser pl) <|> (Parser pr) = Parser $ \x -> pl x <|> pr x  -- since Maybe implements Alternative ...
 
 
-
--- | Data type to represent the WhileAST Abstract Syntax Tree (AST).
-data WhileAST = Assignment String Expression    --  Assignment of a variable with an expression
-              | Sequential WhileAST WhileAST    --  Sequential composition of two statements
-              | While Expression WhileAST       --  While loop with a condition and a body
-              | Loop Expression WhileAST        --  Normal loop with a fix iteration number and a body
-              | Skip                            --  A skip statement, representing no operation
-              deriving (Show, Eq)
-
--- | Data type to represent expressions within WhileAST.
-data Expression = Constant Int                    --  Integer constant
-                | Variable String                 --  Variable reference
-                | Add Expression Expression       --  Addition operation
-                | Subtract Expression Expression  --  Subtraction operation
-                | Neq Expression Expression       --  != operation
-                deriving (Show, Eq)
-
-
 {-|
         Tokenizer-Funktion
 Function for converting a given String (while programm sorce code)
@@ -99,7 +94,7 @@ tokenize = concat . map (uncurry (flip tokenizeHelper))
 tokenizeHelper :: String -> LineNum -> [MetaToken]
 tokenizeHelper [] _ = []
 tokenizeHelper cx@(c:cs) ln
-  | c `elem` " \n\t" = tokenizeHelper cs ln -- Ignoriere Leerzeichen und Zeilenumbrüche
+  | c `elem` " \n\t\r" = tokenizeHelper cs ln -- Ignoriere Leerzeichen und Zeilenumbrüche
   | isAlpha c = uncurry keywordToken $ span (\x -> isAlpha x || isDigit x || x == '_') cx
   | isDigit c = uncurry (\x y -> (MetaToken ln 0 (ConstToken (read x))) : tokenizeHelper y ln) $ span isDigit cx
   | c == ':', Just rest <- stripPrefix "=" cs = MetaToken ln 0 AssignToken : tokenizeHelper rest ln
@@ -118,20 +113,63 @@ tokenizeHelper cx@(c:cs) ln
       _       -> MetaToken ln 0 (VarToken token) : tokenizeHelper rest ln
 
 
-tokenParser :: Token -> Parser Token
-tokenParser t = Parser helper
-  where
-    -- helper :: [Token] -> Maybe ([Token], Token)
-    helper [] = Nothing
-    helper (x:xs) = if x == t then Just (xs, t) else Nothing
+tokenParser :: MetaToken -> Parser MetaToken
+tokenParser t = Parser $ \input -> case input of
+  (x:xs) | case (getToken x, getToken t) of
+             (VarToken _, VarToken _) -> True
+             (ConstToken _, ConstToken _) -> True
+             _ -> getToken x == getToken t
+         -> Just (xs, t)
+  _ -> Nothing
 
 
-tokenListParser :: [Token] -> Parser [Token]
+tokenListParser :: [MetaToken] -> Parser [MetaToken]
 tokenListParser = sequenceA . map tokenParser
-
 
 -- Read the content of a file and return it as a list of its lines with numbering
 readFileContent :: FilePath -> IO [(LineNum, String)]
 readFileContent filePath = readFile filePath >>= \c -> return $ zip [1..] (lines c)
+
+
+constIntParser :: Parser Expression
+constIntParser = f <$> tokenParser (MetaToken 0 0 (ConstToken 0))
+  where
+    f x = Constant $ (getConstInt . getToken) x
+
+varNameParser :: Parser Expression
+varNameParser = f <$> tokenParser (MetaToken 0 0 (VarToken ""))
+  where
+    f x = Variable $ (getVarName . getToken) x
+
+addExpressionParser :: Parser Expression
+addExpressionParser = f <$> (varConst <|> constVar <|> constConst <|> varVar)
+  where
+    f (_:a:b:xs) = case (getToken a, getToken b) of
+                     (ConstToken x, ConstToken y) -> Add (Constant x) (Constant y)
+                     _ -> undefined
+
+    var   = MetaToken 0 0 (VarToken "")
+    const = MetaToken 0 0 (ConstToken 0)
+    add   = MetaToken 0 0 (PlusToken)
+
+    varConst = tokenListParser [var, add, const]
+    constVar = tokenListParser [const, add, var]
+    constConst = tokenListParser [const, add, const]
+    varVar = tokenListParser [var, add, var]
+
+subtractExpressionParser :: Parser Expression
+subtractExpressionParser = undefined
+
+neqExpressionParser :: Parser Expression
+neqExpressionParser = undefined
+
+expressionParser :: Parser Expression
+expressionParser = constIntParser
+  <|> varNameParser
+  <|> addExpressionParser
+  <|>subtractExpressionParser
+  <|> neqExpressionParser
+
+
 
 --

@@ -17,5 +17,11 @@ main = do
                           (4, "end")]
 
   print tokens1
+
   putStrLn $ "\n" ++ (concat (replicate 40 " =")) ++ "\n"
+
   print tokens2
+
+  putStrLn $ "\n" ++ (concat (replicate 40 " =")) ++ "\n"
+
+  -- print $ show (assignParser token2)
