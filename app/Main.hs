@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Lib
-import WhileParser (tokenize, readFileContent)
+import WhileParser (tokenize, readFileContent, whileASTParser, runParser)
 
 
 main :: IO ()
@@ -24,4 +24,4 @@ main = do
 
   putStrLn $ "\n" ++ (concat (replicate 40 " =")) ++ "\n"
 
-  -- print $ show (assignParser token2)
+  print $ show (runParser whileASTParser tokens2)
