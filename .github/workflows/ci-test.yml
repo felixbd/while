@@ -6,13 +6,12 @@ on:
       - main
 
 jobs:
-  before_script:
+
+  script:
     - apt-get update -qq -y
     - apt-get install -y hlint
 
-  lint:
-    script:
-      - hlint src/*.hs app/*.hs test/*.hs
+    - hlint src/*.hs app/*.hs test/*.hs
 
   # artifacts:
   #  paths:
