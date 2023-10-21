@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 
--- | Parser for the while programming language in haskell - (c) 2023 Felix Drees
+-- | Parser for the while programming language in haskell - (c) 2023 Felix Drees - BSD3 License
 
 module WhileParser
   (Token(..)
@@ -190,22 +190,4 @@ mainParser :: Parser WhileAST
 mainParser = sequenceParser <|> assignmentParser <|> whileParser <|> loopParser
 
 -- end parser WhileAST ------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
