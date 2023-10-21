@@ -7,7 +7,7 @@ maintainer:          "fdrees@uni-bremen.de"
 copyright:           "Felix Drees"
 
 extra-source-files:
-- README.md
+- README.org
 - CHANGELOG.md
 
 # Metadata used when publishing your package

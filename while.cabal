@@ -16,7 +16,7 @@ license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    README.md
+    README.org
     CHANGELOG.md
 
 source-repository head

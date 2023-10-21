@@ -14,13 +14,10 @@ module WhileParser
   ) where
 
 import Control.Applicative
+import Control.Monad
 import Data.Char (isDigit, isAlpha)
 import Data.List (stripPrefix)
 
-{-|
-Tokens for representing the while-language as haskell data types
-relevant for the parsers tokenizer to generate the ast (Abstract Syntacs Tree) Tokens
--}
 data Token = VarToken { getVarName :: String }  -- e.g. x_1 (has to start with letter - can contain digit and '_')
            | ConstToken { getConstInt :: Int }   -- e.g. 5 (positive int with 0 only)
            | AssignToken      -- :=
@@ -39,16 +36,15 @@ data MetaToken = MetaToken { getLineNumber :: LineNum,
                              getToken :: Token
                            } deriving (Show, Eq)
 
--- | Data type to represent the WhileAST Abstract Syntax Tree (AST).
 data WhileAST = Assignment String Expression    --  Assignment of a variable with an expression
               | Sequential WhileAST WhileAST    --  Sequential composition of two statements
               | While Expression WhileAST       --  While loop with a condition and a body
               | Loop Expression WhileAST        --  Normal loop with a fix iteration number and a body
+              | Pass                            --  if there is no code after a semicolon
               deriving (Show, Eq)
 
--- | Data type to represent expressions within WhileAST.
-data Expression = Constant { getConst :: Int }                    --  Integer constant
-                | Variable { getVar :: String }                 --  Variable reference
+data Expression = Constant { getConst :: Int }    --  Integer constant
+                | Variable { getVar :: String }   --  Variable reference
                 | Add Expression Expression       --  Addition operation
                 | Subtract Expression Expression  --  Subtraction operation
                 | Neq Expression Expression       --  != operation
@@ -57,24 +53,14 @@ data Expression = Constant { getConst :: Int }                    --  Integer co
 newtype Parser a = Parser { runParser :: [MetaToken] -> Maybe ([MetaToken], a) }
 
 instance Functor Parser where
-  -- fmap for (<$>)
-  fmap f (Parser p) = Parser helper
-    where
-      -- helper :: [Token] -> Maybe ([Token], Token)
-      helper tx = p tx >>= \(ty, x) -> Just (ty, f x)
+  fmap f (Parser p) = Parser $ p >=> \(tks, x) -> Just (tks, f x)
 
-
--- requires instance functor
 instance Applicative Parser where
   pure x = Parser $ \xs -> Just (xs, x)
 
-  (Parser pl) <*> (Parser pr) = Parser combinedParser
+  (Parser pl) <*> (Parser pr) = Parser $ pl >=> \(ty, f) -> pr ty >>= \(tz, t) -> Just (tz, f t)
   -- <* :: f a -> f b -> f a
   -- *> :: f a -> f b -> f b
-    where
-      -- combinedParser :: [Token] -> Maybe ([Token], Token)
-      combinedParser tx = pl tx >>= \(ty, f) -> pr ty >>= \(tz, t) -> Just (tz, f t)
-
 
 instance Alternative Parser where
   empty = Parser $ const Nothing
@@ -95,7 +81,7 @@ tokenizeHelper cx@(c:cs) ln
   | c == '!', Just rest <- stripPrefix "=" cs = MetaToken ln NotEqualToken : tokenizeHelper rest ln
   | c == '+' = MetaToken ln PlusToken : tokenizeHelper cs ln
   | c == '-' = MetaToken ln MinusToken : tokenizeHelper cs ln
-  | otherwise = error $ "Invalid char: " ++ [c] ++ " in line: " ++ show ln
+  | otherwise = error $ "\n\ESC[91m[TOKENIZER ERROR]\ESC[0m Invalid char: -> " ++ [c] ++ " <- in line: " ++ show ln ++ "\n"
   where
     keywordToken :: String -> String -> [MetaToken]
     keywordToken token rest = case token of
@@ -120,10 +106,8 @@ tokenParser t = Parser $ \case
 -- tokenListParser = sequenceA . map tokenParser
 -- tokenListParser = traverse tokenParser
 
-
--- Read the content of a file and return it as a list of its lines with numbering
 readFileContent :: FilePath -> IO [(LineNum, String)]
-readFileContent filePath = readFile filePath >>= \c -> return $ zip [1..] (lines c)
+readFileContent filePath = putStrLn ("\n\ESC[92m[READING .WHILE FILE]\ESC[0m " ++ show filePath) >> readFile filePath >>= \c -> return $ zip [1..] (lines c)
 
 
 -- begin parser expression --------------------------------------------------
@@ -141,30 +125,24 @@ varNameParser = f <$> tokenParser (MetaToken 0 (VarToken ""))
     f x = Variable $ (getVarName . getToken) x
 
 
-varConstParser :: MetaToken -> Parser Expression
-varConstParser mt = case getToken mt of
-    PlusToken -> Add <$> varNameParser <*> (tokenParser mt *> constIntParser)
-    MinusToken -> Subtract <$> varNameParser <*> (tokenParser mt *> constIntParser)
-    NotEqualToken -> Neq <$> varNameParser <*> (tokenParser mt *> constIntParser)
-
-constVarParser :: MetaToken -> Parser Expression
-constVarParser mt = case getToken mt of
-    PlusToken -> Add <$> constIntParser <*> (tokenParser mt *> varNameParser)
-    MinusToken -> Subtract <$> constIntParser <*> (tokenParser mt *> varNameParser)
-    NotEqualToken -> Neq <$> constIntParser <*> (tokenParser mt *> varNameParser)
-
-opExpressionParser :: Token -> Parser Expression
-opExpressionParser op = constVarParser (MetaToken 0 op) <|> varConstParser (MetaToken 0 op)
+opExpParser :: MetaToken -> Parser Expression
+opExpParser mt = f <$> ((varNameParser <|> constIntParser) <* tokenParser mt) <*> expressionParser
+  where
+    f = case getToken mt of
+      PlusToken -> Add
+      MinusToken -> Subtract
+      NotEqualToken -> Neq
+      _ -> error "[INVALID OPERATION] the given operation is not supported"  -- this should never happer (this func will not be exportet anyway)
 
 
 addExpressionParser :: Parser Expression
-addExpressionParser = opExpressionParser PlusToken
+addExpressionParser = opExpParser $ MetaToken 0 PlusToken
 
 subtractExpressionParser :: Parser Expression
-subtractExpressionParser = opExpressionParser MinusToken
+subtractExpressionParser = opExpParser $ MetaToken 0 MinusToken
 
 neqExpressionParser :: Parser Expression
-neqExpressionParser = opExpressionParser NotEqualToken
+neqExpressionParser = opExpParser $ MetaToken 0 NotEqualToken
 
 expressionParser :: Parser Expression
 expressionParser = addExpressionParser <|> subtractExpressionParser <|> neqExpressionParser <|> constIntParser <|> varNameParser
@@ -184,7 +162,7 @@ loopParser :: Parser WhileAST
 loopParser = Loop <$> (tokenParser (MetaToken 0 LoopToken) *> expressionParser <* tokenParser (MetaToken 0 DoToken)) <*> mainParser <* tokenParser (MetaToken 0 EndToken)
 
 sequenceParser :: Parser WhileAST
-sequenceParser = Sequential <$> (assignmentParser <|> whileParser <|> loopParser) <*> (tokenParser (MetaToken 0 SemicolonToken) *> mainParser)
+sequenceParser = Sequential <$> (assignmentParser <|> whileParser <|> loopParser) <*> (tokenParser (MetaToken 0 SemicolonToken) *> (mainParser <|> pure Pass))
 
 mainParser :: Parser WhileAST
 mainParser = sequenceParser <|> assignmentParser <|> whileParser <|> loopParser

@@ -1,12 +1,10 @@
 module Main (main) where
 
-import Lib
 import WhileParser (tokenize, readFileContent, mainParser, runParser, many)
 
 
 main :: IO ()
 main = do
-  someFunc
 
   whileLines <- readFileContent "./examples/foo.while"
   let tokens1 = tokenize whileLines
@@ -19,6 +17,10 @@ main = do
                          ]
 
   print tokens1
+
+  putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
+
+  print $ show (runParser (many mainParser) tokens1)
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 

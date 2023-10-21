@@ -3,6 +3,29 @@
 Parser and interpreter for the While programming language
 
 
+** usage
+
+*** compile
+
+#+begin_src shell
+stack build
+#+end_src
+
+
+*** run
+
+#+begin_src shell
+stack run
+#+end_src
+
+
+*** test
+
+#+begin_src shell
+stack test
+#+end_src
+
+
 ** requirements
 
 *** [[https://docs.haskellstack.org/en/stable/][Haskell Tool Stack]]
