@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      WhileEvaluation
       WhileParser
   other-modules:
       Paths_while

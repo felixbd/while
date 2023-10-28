@@ -1,6 +1,11 @@
+-- | Parser and interpreter for the While programming language
+-- | (c) 2023 Felix Drees - BSD3 License
+
 module Main (main) where
 
-import WhileParser (tokenize, readFileContent, mainParser, runParser, many)
+import WhileParser (WhileAST(..), tokenize, readFileContent, runASTParser)
+
+import WhileEvaluation (eval, calcInitialVarStates, isSimpleArithmeticExpression)
 
 
 main :: IO ()
@@ -20,7 +25,7 @@ main = do
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
-  print $ show (runParser (many mainParser) tokens1)
+  print $ runASTParser tokens1
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
@@ -28,4 +33,12 @@ main = do
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
-  print $ show (runParser (many mainParser) tokens2)
+  print $ show (runASTParser tokens2)
+
+  putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
+
+  let x = runASTParser tokens1
+
+  print $ calcInitialVarStates x
+
+  putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
