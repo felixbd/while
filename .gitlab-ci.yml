@@ -1,0 +1,23 @@
+stages:
+  - lint
+  - test
+
+haskell_lint:
+  stage: lint
+  image: haskell:latest
+  script:
+    - cabal update
+    - cabal install hlint
+    - hlint src/*.hs app/*.hs test/*.hs
+  only:
+    - merge_requests
+    - master
+
+stack_tests:
+  stage: test
+  image: haskell:latest
+  script:
+    - stack setup
+    - stack test
+  only:
+    - master

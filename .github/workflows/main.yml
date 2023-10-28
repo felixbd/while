@@ -1,0 +1,48 @@
+name: Haskell CI/CD
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint:
+    name: Haskell Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Haskell
+        uses: actions/setup-haskell@v1
+        with:
+          ghc-version: 8.10
+          stack-version: 2.7
+
+      - name: Install HLint
+        run: stack install hlint
+
+      - name: Run HLint
+        run: stack exec hlint src/*.hs app/*.hs test/*.hs
+
+  test:
+    name: Stack Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Haskell
+        uses: actions/setup-haskell@v1
+        with:
+          ghc-version: 8.10
+          stack-version: 2.7
+
+      - name: Stack Setup
+        run: stack setup
+
+      - name: Stack Build and Test
+        run: stack test
