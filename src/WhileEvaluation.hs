@@ -75,6 +75,5 @@ isSimpleArithmeticExpression _                = False
 
 
 -- TODO(all): ...
-
 eval :: VariableStates ->  WhileAST -> VariableStates
 eval vs wast = vs
