@@ -26,6 +26,13 @@ stack test
 #+end_src
 
 
+*** linting
+
+#+begin_src shell
+stack exec hlint src/*.hs app/*.hs test/*.hs
+#+end_src
+
+
 ** requirements
 
 *** [[https://docs.haskellstack.org/en/stable/][Haskell Tool Stack]]
