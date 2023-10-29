@@ -1,5 +1,8 @@
 -- | Evaluation of a while AST in haskell - (c) 2023 Felix Drees - BSD3 License
 
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE TupleSections #-}
+
 module WhileEvaluation
   (eval
   ,calcInitialVarStates
@@ -21,6 +24,22 @@ import WhileParser
 
 type VariableState = (String, Maybe Int)
 type VariableStates = [VariableState]
+
+type VariableStatesTransformer a = VariableStates -> (a, VariableStates)
+
+infixl 1 >>>=
+(>>>=) :: VariableStatesTransformer a -> (a -> VariableStatesTransformer b) -> VariableStatesTransformer b
+varStateTransformer >>>= f = uncurry f . varStateTransformer
+
+newtype VariableStatesMonad a = VariableStatesMonad { asT :: VariableStatesTransformer a } deriving Functor
+
+instance Applicative VariableStatesMonad where
+  pure x = VariableStatesMonad (x,)
+  vstf <*> vst = VariableStatesMonad (asT vstf >>>= \f -> asT vst >>>= \x -> asT (pure (f x)))
+
+instance Monad VariableStatesMonad where
+  vst >>= f = VariableStatesMonad (asT vst >>>= asT . f)
+
 
 -- calc initial world state (relevant for monad) ------------------------------
 
@@ -76,5 +95,11 @@ isSimpleArithmeticExpression _                = False
 
 -- TODO(all): ...
 
-eval :: VariableStates ->  WhileAST -> VariableStates
-eval vs wast = vs
+eval :: WhileAST-> VariableStates -> VariableStates
+eval ast vs = vs
+
+evalT :: WhileAST -> VariableStatesTransformer ()
+evalT ast w = ((), eval ast w)
+
+evalM :: WhileAST -> VariableStatesMonad ()
+evalM = VariableStatesMonad . evalT
