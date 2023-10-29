@@ -52,7 +52,7 @@ evalExp = (. evaluateSimple) . (,)
 -}
 
 evaluateSimple :: Expression -> Maybe Int
-evaluateSimple e = (\x -> max 0 x) <$>
+evaluateSimple e = max 0 x <$>
                    if isSimpleArithmeticExpression e
                    then Just (evaluateMath e)
                    else Nothing
