@@ -2,6 +2,13 @@
 
 Parser and interpreter for the While programming language
 
+<p>
+  <img
+    src="https://github.com/felixbd/while/actions/workflows/ci-test.yml/badge.svg?branch=main"
+    alt="Haskell CI/CD Pipeline Status"
+  >
+</p>
+
 
 ** usage
 

@@ -5,7 +5,7 @@ module Main (main) where
 
 import WhileParser (WhileAST(..), tokenize, readFileContent, runASTParser)
 
-import WhileEvaluation (eval, calcInitialVarStates, isSimpleArithmeticExpression)
+import WhileEvaluation ()  -- eval)  -- , calcInitialVarStates, isSimpleArithmeticExpression)
 
 
 main :: IO ()
@@ -37,8 +37,8 @@ main = do
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
-  let x = runASTParser tokens1
+  -- let x = runASTParser tokens1
 
-  print $ calcInitialVarStates x
+  -- print $ calcInitialVarStates x
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
