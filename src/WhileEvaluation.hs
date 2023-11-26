@@ -2,7 +2,6 @@
 
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE LambdaCase #-}
 
 module WhileEvaluation
   ( -- eval
@@ -49,7 +48,7 @@ lookUpVarState varName ((name, value):xs) | varName == name = value
                                           | otherwise       = lookUpVarState varName xs
 
 updateVarState :: VarName -> Int -> VarStateWorld -> VarStateWorld
-updateVarState name val states | not (name `elem` (map fst states)) = (name, val):states
+updateVarState name val states | notElem name map fst states = (name, val):states
                                | otherwise = [(varName, if name == varName then val else varVal)
                                              | (varName, varVal) <- states]
 
@@ -61,11 +60,11 @@ evalExpression exp state = case exp of
                              (Variable varName)   -> lookUpVarState varName state
                              (Add exp1 exp2)      -> helper (+) [exp1, exp2]
                              (Subtract exp1 exp2) -> helper (-) [exp1, exp2]
-                             (Neq exp1 exp2)      -> fromEnum $ (evalExpression exp1 state) /= (evalExpression exp2 state)
+                             (Neq exp1 exp2)      -> fromEnum $ evalExpression exp1 state /= evalExpression exp2 state
                              _                    -> undefined
   where
     -- helper :: (Int -> Int -> Int) -> [Expression] -> Int
-    helper f es = foldl (\acc x -> f acc (evalExpression x state)) 0 es
+    helper f = foldl (\acc x -> f acc (evalExpression x state)) 0
 
 --------------------------------------------------------------------------------
 
