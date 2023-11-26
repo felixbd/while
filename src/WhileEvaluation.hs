@@ -48,7 +48,7 @@ lookUpVarState varName ((name, value):xs) | varName == name = value
                                           | otherwise       = lookUpVarState varName xs
 
 updateVarState :: VarName -> Int -> VarStateWorld -> VarStateWorld
-updateVarState name val states | notElem name (map fst states) = (name, val):states
+updateVarState name val states | name `notElem` map fst states = (name, val):states
                                | otherwise = [(varName, if name == varName then val else varVal)
                                              | (varName, varVal) <- states]
 
