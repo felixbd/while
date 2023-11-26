@@ -2,15 +2,7 @@
 
 Parser and interpreter for the While programming language
 
-
-#+begin_export html
-<p>
-  <img
-    src="https://github.com/felixbd/while/actions/workflows/ci-test.yml/badge.svg?branch=main"
-    alt="Haskell CI/CD Pipeline Status"
-  >
-</p>
-#+end_export
+[[https://github.com/felixbd/while/actions/workflows/ci-test.yml/badge.svg?branch=main]]
 
 
 ** usage
