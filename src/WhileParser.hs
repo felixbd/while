@@ -1,4 +1,5 @@
--- | Parser for the while programming language in haskell - (c) 2023 Felix Drees - BSD3 License
+-- | Parser for the while programming language in haskell
+-- | (c) 2023 Felix Drees - BSD3 License
 
 {-# LANGUAGE LambdaCase #-}
 
@@ -111,7 +112,8 @@ tokenParser t = Parser $ \case
 
 readFileContent :: FilePath -> IO [(LineNum, String)]
 readFileContent filePath = putStrLn ("\n\ESC[92m[READING .WHILE FILE]\ESC[0m " ++ show filePath)
-                                >> readFile filePath >>= \c -> return $ zip [1..] (lines c)
+                                >> readFile filePath
+                                >>= \c -> return $ zip [1..] (lines c)
 
 -- begin parser expression ----------------------------------------------------
 
