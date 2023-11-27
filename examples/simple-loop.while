@@ -1,0 +1,4 @@
+x := 0;
+g := 5;
+
+loop g + 1 do x := x + 1 end

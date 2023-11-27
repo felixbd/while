@@ -1,10 +1,16 @@
--- | Evaluation of a while AST in haskell - (c) 2023 Felix Drees - BSD3 License
+-- | Evaluation of a while AST in haskell
+-- | (c) 2023 Felix Drees - BSD3 License
 
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE TupleSections #-}
 
 module WhileEvaluation
-  ( -- eval
+  (evalM
+  ,eval
+  ,VarName
+  ,VarVal
+  ,VarState
+  ,VarStateWorld
   ) where
 
 
@@ -40,7 +46,7 @@ instance Applicative VarStateM where
 instance Monad VarStateM where
   vst >>= f = VarStateM (getVST vst >>>= getVST . f)
 
-
+--------------------------------------------------------------------------------
 
 lookUpVarState :: VarName -> VarStateWorld -> Int
 lookUpVarState varName [] = error $ "\n\ESC[91m[REFERENCED BEFORE ASSIGNMENT]\ESC[0m " ++ varName
@@ -59,7 +65,7 @@ evalExpression exp state = case exp of
                              (Constant c)         -> c
                              (Variable varName)   -> lookUpVarState varName state
                              (Add exp1 exp2)      -> helper (+) [exp1, exp2]
-                             (Subtract exp1 exp2) -> helper (-) [exp1, exp2]
+                             (Subtract exp1 exp2) -> evalExpression exp1 state - evalExpression exp2 state
                              (Neq exp1 exp2)      -> fromEnum $ evalExpression exp1 state /= evalExpression exp2 state
                              _                    -> undefined
   where
@@ -73,8 +79,14 @@ evalAssignment (Assignment name exp) state = updateVarState name (evalExpression
 evalAssignment _ _ = undefined
 
 evalWhileExp :: WhileAST -> VarStateWorld -> VarStateWorld
-evalWhileExp (While exp whileAST) state = undefined  -- TODO ...
+evalWhileExp (While exp whileAST) state = helperWhile exp whileAST state
 evalWhileExp _ _ = undefined
+
+-- NOTE maybe check if `evalExpression p state` returns either 0 or 1 ...
+helperWhile :: Expression -> WhileAST -> VarStateWorld -> VarStateWorld
+helperWhile p ast state = if evalExpression p state == 1
+                          then helperWhile p ast (eval ast state)
+                          else state
 
 evalLoopExp :: WhileAST -> VarStateWorld -> VarStateWorld
 -- evalLoopExp (Loop exp whileAST) state = (foldr (.) id (replicate (evalExpression exp state) eval))
@@ -89,7 +101,13 @@ helperLoop ast state index = if index > 0
 --------------------------------------------------------------------------------
 
 eval :: WhileAST -> VarStateWorld -> VarStateWorld
-eval ast vs = vs  -- TODO ...
+eval ast vs = case ast of
+                a@(Assignment _ _)      -> evalAssignment a vs
+                (Sequential ast1 ast2)  -> eval ast2 $ eval ast1 vs
+                w@(While _ _)           -> evalWhileExp w vs
+                l@(Loop _ _)            -> evalLoopExp l vs
+                Pass                    -> vs
+                _                       -> vs
 
 evalT :: WhileAST -> VarStateT ()
 evalT ast w = ((), eval ast w)

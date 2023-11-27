@@ -4,26 +4,29 @@
 module Main (main) where
 
 import WhileParser (WhileAST(..), tokenize, readFileContent, runASTParser)
-
-import WhileEvaluation ()  -- eval)  -- , calcInitialVarStates, isSimpleArithmeticExpression)
+import WhileEvaluation (eval, evalM, VarName, VarVal, VarState, VarStateWorld)
 
 
 main :: IO ()
 main = do
 
-  whileLines <- readFileContent "./examples/foo.while"
-  let tokens1 = tokenize whileLines
+  putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
-  print tokens1
+  whileLines <- readFileContent "./examples/simple.while"
+  let tokens = tokenize whileLines
+
+  print tokens
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
-  print $ runASTParser tokens1
+  let astOfFoo = runASTParser tokens
+  print astOfFoo
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
-  -- let x = runASTParser tokens1
+  putStrLn "\ESC[92m[OUTPUT]\ESC[0m:"
 
-  -- print $ calcInitialVarStates x
+  let a = eval astOfFoo []
+  print a
 
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"

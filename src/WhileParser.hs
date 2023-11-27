@@ -5,6 +5,8 @@
 
 module WhileParser
   (Token(..)
+  ,LineNum
+  ,MetaToken(..)
   ,WhileAST(..)
   ,Expression(..)
   ,tokenize
@@ -111,7 +113,7 @@ tokenParser t = Parser $ \case
 -- tokenListParser = traverse tokenParser
 
 readFileContent :: FilePath -> IO [(LineNum, String)]
-readFileContent filePath = putStrLn ("\n\ESC[92m[READING .WHILE FILE]\ESC[0m " ++ show filePath)
+readFileContent filePath = putStrLn ("\ESC[92m[READING .WHILE FILE]\ESC[0m " ++ show filePath)
                                 >> readFile filePath
                                 >>= \c -> return $ zip [1..] (lines c)
 

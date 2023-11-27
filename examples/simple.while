@@ -1,0 +1,7 @@
+x_1 := 10;
+x_2 := 0;
+
+while x_1 != 0 do
+	x_1 := x_1 - 1;
+	loop x_1 do x_2 := x_2 + x_1 end
+end
