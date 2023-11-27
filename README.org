@@ -10,61 +10,65 @@ Parser and interpreter for the While programming language
 *** example
 
 #+begin_src shell
-felix in ~/git-repos/hub/while on main λ stack run
+felix in ~/git-repos/hub/while on main ● λ stack build
+felix in ~/git-repos/hub/while on main ● λ stack run
 
  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
+Enter the file name:
+./examples/simple.while
 [READING .WHILE FILE] "./examples/simple.while"
+
+[DONE TOKENIZE]:
 [MetaToken {getLineNumber = 1, getToken = VarToken {getVarName = "x_1"}},
- MetaToken {getLineNumber = 1, getToken = AssignToken},
- MetaToken {getLineNumber = 1, getToken = ConstToken {getConstInt = 10}},
- MetaToken {getLineNumber = 1, getToken = SemicolonToken},
- MetaToken {getLineNumber = 2, getToken = VarToken {getVarName = "x_2"}},
- MetaToken {getLineNumber = 2, getToken = AssignToken},
- MetaToken {getLineNumber = 2, getToken = ConstToken {getConstInt = 0}},
- MetaToken {getLineNumber = 2, getToken = SemicolonToken},
- MetaToken {getLineNumber = 4, getToken = WhileToken},
- MetaToken {getLineNumber = 4, getToken = VarToken {getVarName = "x_1"}},
- MetaToken {getLineNumber = 4, getToken = NotEqualToken},
- MetaToken {getLineNumber = 4, getToken = ConstToken {getConstInt = 0}},
- MetaToken {getLineNumber = 4, getToken = DoToken},
- MetaToken {getLineNumber = 5, getToken = VarToken {getVarName = "x_1"}},
- MetaToken {getLineNumber = 5, getToken = AssignToken},
- MetaToken {getLineNumber = 5, getToken = VarToken {getVarName = "x_1"}},
- MetaToken {getLineNumber = 5, getToken = MinusToken},
- MetaToken {getLineNumber = 5, getToken = ConstToken {getConstInt = 1}},
- MetaToken {getLineNumber = 5, getToken = SemicolonToken},
- MetaToken {getLineNumber = 6, getToken = LoopToken},
- MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_1"}},
- MetaToken {getLineNumber = 6, getToken = DoToken},
- MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_2"}},
- MetaToken {getLineNumber = 6, getToken = AssignToken},
- MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_2"}},
- MetaToken {getLineNumber = 6, getToken = PlusToken},
- MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_1"}},
- MetaToken {getLineNumber = 6, getToken = EndToken},
- MetaToken {getLineNumber = 7, getToken = EndToken}]
+MetaToken {getLineNumber = 1, getToken = AssignToken},
+MetaToken {getLineNumber = 1, getToken = ConstToken {getConstInt = 10}},
+MetaToken {getLineNumber = 1, getToken = SemicolonToken},
+MetaToken {getLineNumber = 2, getToken = VarToken {getVarName = "x_2"}},
+MetaToken {getLineNumber = 2, getToken = AssignToken},
+MetaToken {getLineNumber = 2, getToken = ConstToken {getConstInt = 0}},
+MetaToken {getLineNumber = 2, getToken = SemicolonToken},
+MetaToken {getLineNumber = 4, getToken = WhileToken},
+MetaToken {getLineNumber = 4, getToken = VarToken {getVarName = "x_1"}},
+MetaToken {getLineNumber = 4, getToken = NotEqualToken},
+MetaToken {getLineNumber = 4, getToken = ConstToken {getConstInt = 0}},
+MetaToken {getLineNumber = 4, getToken = DoToken},
+MetaToken {getLineNumber = 5, getToken = VarToken {getVarName = "x_1"}},
+MetaToken {getLineNumber = 5, getToken = AssignToken},
+MetaToken {getLineNumber = 5, getToken = VarToken {getVarName = "x_1"}},
+MetaToken {getLineNumber = 5, getToken = MinusToken},
+MetaToken {getLineNumber = 5, getToken = ConstToken {getConstInt = 1}},
+MetaToken {getLineNumber = 5, getToken = SemicolonToken},
+MetaToken {getLineNumber = 6, getToken = LoopToken},
+MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_1"}},
+MetaToken {getLineNumber = 6, getToken = DoToken},
+MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_2"}},
+MetaToken {getLineNumber = 6, getToken = AssignToken},
+MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_2"}},
+MetaToken {getLineNumber = 6, getToken = PlusToken},
+MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "x_1"}},
+MetaToken {getLineNumber = 6, getToken = EndToken},
+MetaToken {getLineNumber = 7, getToken = EndToken}]
 
- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
+[DONE PARSING AST]:
 Sequential
 	(Assignment "x_1" (Constant {getConst = 10}))
 	(Sequential
 		(Assignment "x_2" (Constant {getConst = 0}))
 		(While
 			(Neq (Variable {getVar = "x_1"}) (Constant {getConst = 0}))
-				(Sequential
-					(Assignment "x_1" (Subtract (Variable {getVar = "x_1"}) (Constant {getConst = 1})))
-					(Loop
-						(Variable {getVar = "x_1"})
-						(Assignment "x_2" (Add (Variable {getVar = "x_2"}) (Variable {getVar = "x_1"})))))))
+			(Sequential
+				(Assignment "x_1" (Subtract (Variable {getVar = "x_1"}) (Constant {getConst = 1})))
+				(Loop
+					(Variable {getVar = "x_1"})
+					(Assignment "x_2" (Add (Variable {getVar = "x_2"}) (Variable {getVar = "x_1"})))))))
 
- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-[OUTPUT]:
+[OUTPUT OF EVALUATION]:
 [("x_2",285),("x_1",0)]
 
  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+felix in ~/git-repos/hub/while on main ● λ
 #+end_src
 
 *** compile

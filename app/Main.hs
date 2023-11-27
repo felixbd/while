@@ -3,29 +3,30 @@
 
 module Main (main) where
 
-import WhileParser (WhileAST(..), tokenize, readFileContent, runASTParser)
-import WhileEvaluation (eval, evalM, VarName, VarVal, VarState, VarStateWorld)
+import WhileParser (tokenize, readFileContent, runASTParser)  -- WhileAST(..),
+import WhileEvaluation (eval) --, evalM, VarName, VarVal, VarState, VarStateWorld)
 
 
 main :: IO ()
 main = do
-
   putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
 
-  whileLines <- readFileContent "./examples/simple.while"
+  -- Prompt the user for the file name
+  putStrLn "Enter the file name:"
+  fileName <- getLine
+
+  -- Read the content of the specified file
+  whileLines <- readFileContent fileName  -- "./examples/simple.while"
   let tokens = tokenize whileLines
 
+  putStrLn "\n\ESC[92m[DONE TOKENIZE]\ESC[0m:"
   print tokens
 
-  putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
-
   let astOfFoo = runASTParser tokens
+  putStrLn "\n\ESC[92m[DONE PARSING AST]\ESC[0m:"
   print astOfFoo
 
-  putStrLn $ "\n" ++ concat (replicate 40 " =") ++ "\n"
-
-  putStrLn "\ESC[92m[OUTPUT]\ESC[0m:"
-
+  putStrLn "\n\ESC[92m[OUTPUT OF EVALUATION]\ESC[0m:"
   let a = eval astOfFoo []
   print a
 

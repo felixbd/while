@@ -61,13 +61,12 @@ updateVarState name val states | name `notElem` map fst states = (name, val):sta
 --------------------------------------------------------------------------------
 
 evalExpression :: Expression -> VarStateWorld -> Int
-evalExpression exp state = case exp of
+evalExpression expr state = case expr of
                              (Constant c)         -> c
                              (Variable varName)   -> lookUpVarState varName state
                              (Add exp1 exp2)      -> helper (+) [exp1, exp2]
-                             (Subtract exp1 exp2) -> evalExpression exp1 state - evalExpression exp2 state
+                             (Subtract exp1 exp2) -> max 0 $ evalExpression exp1 state - evalExpression exp2 state
                              (Neq exp1 exp2)      -> fromEnum $ evalExpression exp1 state /= evalExpression exp2 state
-                             _                    -> undefined
   where
     -- helper :: (Int -> Int -> Int) -> [Expression] -> Int
     helper f = foldl (\acc x -> f acc (evalExpression x state)) 0
@@ -75,11 +74,11 @@ evalExpression exp state = case exp of
 --------------------------------------------------------------------------------
 
 evalAssignment :: WhileAST -> VarStateWorld -> VarStateWorld
-evalAssignment (Assignment name exp) state = updateVarState name (evalExpression exp state) state
+evalAssignment (Assignment name expr) state = updateVarState name (evalExpression expr state) state
 evalAssignment _ _ = undefined
 
 evalWhileExp :: WhileAST -> VarStateWorld -> VarStateWorld
-evalWhileExp (While exp whileAST) state = helperWhile exp whileAST state
+evalWhileExp (While expr whileAST) state = helperWhile expr whileAST state
 evalWhileExp _ _ = undefined
 
 -- NOTE maybe check if `evalExpression p state` returns either 0 or 1 ...
@@ -90,7 +89,7 @@ helperWhile p ast state = if evalExpression p state == 1
 
 evalLoopExp :: WhileAST -> VarStateWorld -> VarStateWorld
 -- evalLoopExp (Loop exp whileAST) state = (foldr (.) id (replicate (evalExpression exp state) eval))
-evalLoopExp (Loop exp whileAST) state = helperLoop whileAST state (evalExpression exp state)
+evalLoopExp (Loop expr whileAST) state = helperLoop whileAST state (evalExpression expr state)
 evalLoopExp _ _ = undefined
 
 helperLoop :: WhileAST -> VarStateWorld -> Int -> VarStateWorld
@@ -107,7 +106,6 @@ eval ast vs = case ast of
                 w@(While _ _)           -> evalWhileExp w vs
                 l@(Loop _ _)            -> evalLoopExp l vs
                 Pass                    -> vs
-                _                       -> vs
 
 evalT :: WhileAST -> VarStateT ()
 evalT ast w = ((), eval ast w)

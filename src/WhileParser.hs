@@ -2,6 +2,7 @@
 -- | (c) 2023 Felix Drees - BSD3 License
 
 {-# LANGUAGE LambdaCase #-}
+{-# OPTIONS_GHC -Wno-partial-fields #-}
 
 module WhileParser
   (Token(..)
