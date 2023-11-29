@@ -64,12 +64,9 @@ evalExpression :: Expression -> VarStateWorld -> Int
 evalExpression expr state = case expr of
                              (Constant c)         -> c
                              (Variable varName)   -> lookUpVarState varName state
-                             (Add exp1 exp2)      -> helper (+) [exp1, exp2]
+                             (Add exp1 exp2)      -> foldl (\acc x -> acc + (evalExpression x state)) 0 [exp1, exp2]
                              (Subtract exp1 exp2) -> max 0 $ evalExpression exp1 state - evalExpression exp2 state
                              (Neq exp1 exp2)      -> fromEnum $ evalExpression exp1 state /= evalExpression exp2 state
-  where
-    -- helper :: (Int -> Int -> Int) -> [Expression] -> Int
-    helper f = foldl (\acc x -> f acc (evalExpression x state)) 0
 
 --------------------------------------------------------------------------------
 
@@ -78,14 +75,18 @@ evalAssignment (Assignment name expr) state = updateVarState name (evalExpressio
 evalAssignment _ _ = undefined
 
 evalWhileExp :: WhileAST -> VarStateWorld -> VarStateWorld
-evalWhileExp (While expr whileAST) state = helperWhile expr whileAST state
+evalWhileExp (While expr whileAST) state = helperWhile expr whileAST state 0
 evalWhileExp _ _ = undefined
 
--- NOTE maybe check if `evalExpression p state` returns either 0 or 1 ...
-helperWhile :: Expression -> WhileAST -> VarStateWorld -> VarStateWorld
-helperWhile p ast state = if evalExpression p state == 1
-                          then helperWhile p ast (eval ast state)
-                          else state
+helperWhile :: Expression -> WhileAST -> VarStateWorld -> Int -> VarStateWorld
+helperWhile p ast state maxRec = if maxRec >= getRecursionLimit
+                                 then error "\n\ESC[91m[RecursionError]\ESC[0m: maximum recursion depth exceeded!"
+                                 else if evalExpression p state == 1
+                                      then helperWhile p ast (eval ast state) (maxRec + 1)
+                                      else state
+  where
+    -- getRecursionLimit :: Int
+    getRecursionLimit = 1500
 
 evalLoopExp :: WhileAST -> VarStateWorld -> VarStateWorld
 -- evalLoopExp (Loop exp whileAST) state = (foldr (.) id (replicate (evalExpression exp state) eval))
