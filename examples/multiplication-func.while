@@ -1,0 +1,11 @@
+rv := 0;
+a := 420;
+b := 69;
+
+while b != 0 do
+    temp := rv;
+    loop a do temp := temp + 1 end;
+    rv := temp;
+
+    b := b - 1
+end
