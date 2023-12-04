@@ -104,7 +104,7 @@ since this is a bit tidies i allowed users to use expressions in the context
 
 (refer to the grammar defined above)
 
-shortened (not completely while-language correct ...) version
+shortened (not commpletely while-language correct ...) version
 
 #+begin_src
 x0 := 0;
@@ -115,85 +115,40 @@ loop x2 do x0 := x0 + x1 end
 #+end_src
 
 
-#+begin_src shell
-felix in ~/git-repos/hub/while on dev ● λ stack build
-felix in ~/git-repos/hub/while on dev ● λ stack run
+*** how to call `stack run`
 
- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+#+begin_src shell :exports both :results output
+stack run
+#+end_src
 
-Enter the file name:
-./examples/multiplication-func.while
-[READING .WHILE FILE] "./examples/multiplication-func.while"
+#+RESULTS:
+:
+: = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+: [91m[Error][0m: Usage: stack run <filename>
+: Use 'stack run <filename>' to interpret a while source file.
+: = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+:
 
-[DONE TOKENIZE]:
-[MetaToken {getLineNumber = 1, getToken = VarToken {getVarName = "rv"}},
-MetaToken {getLineNumber = 1, getToken = AssignToken},
-MetaToken {getLineNumber = 1, getToken = ConstToken {getConstInt = 0}},
-MetaToken {getLineNumber = 1, getToken = SemicolonToken},
-MetaToken {getLineNumber = 2, getToken = VarToken {getVarName = "a"}},
-MetaToken {getLineNumber = 2, getToken = AssignToken},
-MetaToken {getLineNumber = 2, getToken = ConstToken {getConstInt = 420}},
-MetaToken {getLineNumber = 2, getToken = SemicolonToken},
-MetaToken {getLineNumber = 3, getToken = VarToken {getVarName = "b"}},
-MetaToken {getLineNumber = 3, getToken = AssignToken},
-MetaToken {getLineNumber = 3, getToken = ConstToken {getConstInt = 69}},
-MetaToken {getLineNumber = 3, getToken = SemicolonToken},
-MetaToken {getLineNumber = 5, getToken = WhileToken},
-MetaToken {getLineNumber = 5, getToken = VarToken {getVarName = "b"}},
-MetaToken {getLineNumber = 5, getToken = NotEqualToken},
-MetaToken {getLineNumber = 5, getToken = ConstToken {getConstInt = 0}},
-MetaToken {getLineNumber = 5, getToken = DoToken},
-MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "temp"}},
-MetaToken {getLineNumber = 6, getToken = AssignToken},
-MetaToken {getLineNumber = 6, getToken = VarToken {getVarName = "rv"}},
-MetaToken {getLineNumber = 6, getToken = SemicolonToken},
-MetaToken {getLineNumber = 7, getToken = LoopToken},
-MetaToken {getLineNumber = 7, getToken = VarToken {getVarName = "a"}},
-MetaToken {getLineNumber = 7, getToken = DoToken},
-MetaToken {getLineNumber = 7, getToken = VarToken {getVarName = "temp"}},
-MetaToken {getLineNumber = 7, getToken = AssignToken},
-MetaToken {getLineNumber = 7, getToken = VarToken {getVarName = "temp"}},
-MetaToken {getLineNumber = 7, getToken = PlusToken},
-MetaToken {getLineNumber = 7, getToken = ConstToken {getConstInt = 1}},
-MetaToken {getLineNumber = 7, getToken = EndToken},
-MetaToken {getLineNumber = 7, getToken = SemicolonToken},
-MetaToken {getLineNumber = 8, getToken = VarToken {getVarName = "rv"}},
-MetaToken {getLineNumber = 8, getToken = AssignToken},
-MetaToken {getLineNumber = 8, getToken = VarToken {getVarName = "temp"}},
-MetaToken {getLineNumber = 8, getToken = SemicolonToken},
-MetaToken {getLineNumber = 10, getToken = VarToken {getVarName = "b"}},
-MetaToken {getLineNumber = 10, getToken = AssignToken},
-MetaToken {getLineNumber = 10, getToken = VarToken {getVarName = "b"}},
-MetaToken {getLineNumber = 10, getToken = MinusToken},
-MetaToken {getLineNumber = 10, getToken = ConstToken {getConstInt = 1}},
-MetaToken {getLineNumber = 11, getToken = EndToken}]
+#+begin_src shell :exports both :results output
+stack run ./examples/multiplication-func.while
+#+end_src
 
-[DONE PARSING AST]:
-Sequential
-    (Assignment "rv" (Constant {getConst = 0}))
-    (Sequential
-        (Assignment "a" (Constant {getConst = 420}))
-        (Sequential
-            (Assignment "b" (Constant {getConst = 69}))
-            (While
-                (Neq (Variable {getVar = "b"}) (Constant {getConst = 0}))
-                (Sequential
-                    (Assignment "temp" (Variable {getVar = "rv"}))
-                    (Sequential
-                        (Loop
-                            (Variable {getVar = "a"})
-                            (Assignment "temp" (Add (Variable {getVar = "temp"}) (Constant {getConst = 1}))))
-                            (Sequential
-                                (Assignment "rv" (Variable {getVar = "temp"}))
-                                (Assignment "b" (Subtract (Variable {getVar = "b"}) (Constant {getConst = 1})))))))))
+#+RESULTS:
+#+begin_example
 
-[OUTPUT OF EVALUATION]:
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+[92m[Interpreting file][0m    ./examples/multiplication-func.while
+[92m[READING .WHILE FILE][0m "./examples/multiplication-func.while"
+[92m[DONE TOKENIZE][0m
+[92m[DONE PARSING AST][0m
+[92m[RESULT OF EVALUATION][0m
 [("temp",28980),("b",0),("a",420),("rv",28980)]
 
- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+= = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-felix in ~/git-repos/hub/while on dev ● λ
-#+end_src
+#+end_example
+
 
 *** compile
 
@@ -225,38 +180,44 @@ stack exec hlint src/*.hs app/*.hs test/*.hs
 
 ** requirements
 
-*** [[https://docs.haskellstack.org/en/stable/][Haskell Tool Stack]]
+*** using `apt`
+
+**** [[https://docs.haskellstack.org/en/stable/][Haskell Tool Stack]]
 
 #+begin_src shell
 curl -SL https://get.haskellstack.org/ | sh
 #+end_src
 
-#+begin_example
-Pro tip: you should look at the file before you run it
-#+end_example
 
-
-*** [[https://www.haskell.org/ghc/][Glasgow Haskell Compiler]]
+**** [[https://www.haskell.org/ghc/][Glasgow Haskell Compiler]]
 
 #+begin_src shell
 apt install ghc
 #+end_src
 
-#+begin_example
-Pro tip: GHC has a interactive shell called `ghci`
-
-- `:e` for edit
-- `:l filename` for loading files
-- `:r` for reloading
-- etc.
-#+end_example
-
-
-*** [[https://github.com/ndmitchell/hlint#readme][HLint]]
+**** [[https://github.com/ndmitchell/hlint#readme][HLint]]
 
 #+begin_src shell
 apt install hlint
 #+end_src
+
+
+*** using `nix`
+
+#+begin_src shell
+nix-shell
+#+end_src
+
+**** hlint
+
+#+begin_src shell
+hlint src/*.hs app/*.hs test/*.hs
+#+end_src
+
+
+**** build and run
+
+same as before
 
 
 ** LICENSE (BSD-3-Clause)
