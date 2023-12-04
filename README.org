@@ -35,6 +35,8 @@ $S = Prog$
 
 $P = \{$
 
+$Prog \to // comment \dots$
+
 $Prog \to Prog; Prog$
 
 $Prog \to Var := Expr$
@@ -83,11 +85,17 @@ cat ./examples/multiplication-func.while
 
 #+RESULTS:
 #+begin_example
+// init var state
 rv := 0;
 a := 420;
 b := 69;
 
+// loop will be exec b-times
 while b != 0 do
+
+    // calculate rv += a (b-times)
+    //  -> a * b = a + a + ... b-times
+
     temp := rv;
     loop a do temp := temp + 1 end;
     rv := temp;

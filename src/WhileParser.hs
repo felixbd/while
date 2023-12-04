@@ -20,8 +20,8 @@ module WhileParser
 
 import Control.Applicative
 import Control.Monad
-import Data.Char (isDigit, isAlpha)
-import Data.List (stripPrefix)
+import Data.Char (isDigit, isAlpha, isSpace)
+import Data.List (stripPrefix, isPrefixOf)
 
 data Token = VarToken { getVarName :: String }  -- e.g. x_1 (has to start with letter - can contain digit and '_')
            | ConstToken { getConstInt :: Int }   -- e.g. 5 (positive int with 0 only)
@@ -116,7 +116,9 @@ tokenParser t = Parser $ \case
 readFileContent :: FilePath -> IO [(LineNum, String)]
 readFileContent filePath = putStrLn ("\ESC[92m[READING .WHILE FILE]\ESC[0m " ++ show filePath)
                                 >> readFile filePath
-                                >>= \c -> return $ zip [1..] (lines c)
+                                >>= \c -> return $ filterComments $ zip [1..] (lines c)
+  where
+    filterComments = filter (not . isPrefixOf "//" . dropWhile isSpace . snd)
 
 -- begin parser expression ----------------------------------------------------
 
