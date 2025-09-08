@@ -2,7 +2,7 @@
 #+author: Felix Drees
 #+STARTUP: latexpreview
 #+OPTIONS: toc:nil tex:t  # tex:verbatim num:nil
-#+keywords: while programs, turing complete, turing machines
+#+keywords: while
 
 * while
 
@@ -132,7 +132,7 @@ stack run
 #+RESULTS:
 :
 : = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-: [91m[Error][0m: Usage: stack run <filename>
+: [Error]: Usage: stack run <filename>
 : Use 'stack run <filename>' to interpret a while source file.
 : = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 :
@@ -146,16 +146,32 @@ stack run ./examples/multiplication-func.while
 
 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-[92m[Interpreting file][0m    ./examples/multiplication-func.while
-[92m[READING .WHILE FILE][0m "./examples/multiplication-func.while"
-[92m[DONE TOKENIZE][0m
-[92m[DONE PARSING AST][0m
-[92m[RESULT OF EVALUATION][0m
+[Interpreting file]    ./examples/multiplication-func.while
+[READING .WHILE FILE] "./examples/multiplication-func.while"
+[DONE TOKENIZE]
+[DONE PARSING AST]
+[RESULT OF EVALUATION]
 [("temp",28980),("b",0),("a",420),("rv",28980)]
 
 = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 #+end_example
+
+or use
+
+#+begin_src shell
+stack ghci
+
+ghci> xs <- readFileContent "./examples/multiplication-func.while"
+[READING .WHILE FILE] "./examples/multiplication-func.while"
+ghci> eval ((runASTParser . tokenize) xs) []
+[("temp",28980),("b",0),("a",420),("rv",28980)]
+ghci> evalT ((runASTParser . tokenize) xs) []
+((),[("temp",28980),("b",0),("a",420),("rv",28980)])
+ghci>
+#+end_src
+
+
 
 
 *** compile
@@ -184,6 +200,14 @@ stack test
 #+begin_src shell
 stack exec hlint src/*.hs app/*.hs test/*.hs
 #+end_src
+
+
+*** pre commit
+
+#+begin_src shell
+pre-commit run --all-files
+#+end_src
+
 
 
 ** requirements

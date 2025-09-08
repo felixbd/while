@@ -1,0 +1,17 @@
+
+repos:
+  - repo: local
+    hooks:
+      - id: hlint
+        name: HLint
+        # entry: stack exec hlint
+        entry: hlint
+        language: system
+        files: ^(src/|app/|test/).+\.hs$
+        pass_filenames: true
+
+      - id: stack-test
+        name: Stack Tests
+        entry: stack test
+        language: system
+        pass_filenames: false

@@ -6,6 +6,7 @@
 
 module WhileEvaluation
   (evalM
+  ,evalT
   ,eval
   ,VarName
   ,VarVal
