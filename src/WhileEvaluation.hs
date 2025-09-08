@@ -12,6 +12,8 @@ module WhileEvaluation
   ,VarVal
   ,VarState
   ,VarStateWorld
+  ,VarStateM(..)
+  ,runEvalM
   ) where
 
 import Data.List (nub)
@@ -31,6 +33,7 @@ type VarStateWorld = [VarState]
 -- | Variable State Transformer
 type VarStateT a = VarStateWorld -> (a, VarStateWorld)
 
+
 infixl 1 >>>=
 (>>>=) :: VarStateT a -> (a -> VarStateT b) -> VarStateT b
 vst >>>= f = uncurry f . vst
@@ -47,6 +50,13 @@ instance Applicative VarStateM where
 
 instance Monad VarStateM where
   vst >>= f = VarStateM (getVST vst >>>= getVST . f)
+
+
+-- getState :: VarStateM VarStateWorld
+-- getState = VarStateM (\s -> (s, s))
+
+-- putState :: VarStateWorld -> VarStateM ()
+-- putState s = VarStateM (const ((), s))
 
 --------------------------------------------------------------------------------
 
@@ -116,3 +126,7 @@ evalT ast w = ((), eval ast w)
 
 evalM :: WhileAST -> VarStateM ()
 evalM = VarStateM . evalT
+
+
+runEvalM :: WhileAST -> VarStateWorld -> ((), VarStateWorld)
+runEvalM ast = getVST $ evalM ast

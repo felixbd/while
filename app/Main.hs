@@ -6,7 +6,8 @@ module Main (main) where
 import System.Environment (getArgs)
 
 import WhileParser (tokenize, readFileContent, runASTParser)  -- WhileAST(..),
-import WhileEvaluation (eval, evalT, evalM) --, evalM, VarName, VarVal, VarState, VarStateWorld)
+import WhileEvaluation (eval, evalT, evalM, getVST, runEvalM)
+  --, evalM, VarName, VarVal, VarState, VarStateWorld)
 
 
 -- | Define a data type to represent the command-line options
@@ -37,10 +38,19 @@ runInterpreter options = do
   -- print ast
 
   putStrLn "\ESC[92m[RESULT OF EVALUATION]\ESC[0m"
-  let a = eval ast []
-  print a
 
-  print $ evalT ast []
+  -- print $ eval ast []  -- eval v1
+  -- print $ evalT ast []  -- eval v2
+
+  let program = evalM ast  -- Monad eval
+  print $ getVST program []
+
+  -- eg.
+  -- let program2 = evalM ast >> evalM ast
+  -- print $ getVST program2 []
+
+  -- or use:
+  -- print $ runEvalM ast []
 
   putStrLn $ "\n" ++ concat (replicate 40 "= ") ++ "=\n"
 
