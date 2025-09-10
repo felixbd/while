@@ -130,12 +130,11 @@ stack run
 #+end_src
 
 #+RESULTS:
-:
 : = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 : [Error]: Usage: stack run <filename>
 : Use 'stack run <filename>' to interpret a while source file.
 : = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-:
+
 
 #+begin_src shell :exports both :results output
 stack run ./examples/multiplication-func.while
@@ -161,17 +160,7 @@ or use
 
 #+begin_src shell
 stack ghci
-
-ghci> xs <- readFileContent "./examples/multiplication-func.while"
-[READING .WHILE FILE] "./examples/multiplication-func.while"
-ghci> eval ((runASTParser . tokenize) xs) []
-[("temp",28980),("b",0),("a",420),("rv",28980)]
-ghci> evalT ((runASTParser . tokenize) xs) []
-((),[("temp",28980),("b",0),("a",420),("rv",28980)])
-ghci>
 #+end_src
-
-
 
 
 *** compile
