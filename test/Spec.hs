@@ -6,9 +6,24 @@
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import WhileParser (WhileAST(..), MetaToken(..), LineNum, Token(..), Expression(..), tokenize, readFileContent, runASTParser)
-import WhileEvaluation (evalM, VarName, VarVal, VarState, VarStateWorld)
+import WhileParser
+  (WhileAST(..)
+  ,MetaToken(..)
+  ,LineNum
+  ,Token(..)
+  ,Expression(..)
+  ,tokenize
+  ,readFileContent
+  ,runASTParser
+  )
 
+import WhileEvaluation
+  (evalM
+  ,VarName
+  ,VarVal
+  ,VarState
+  ,VarStateWorld
+  )
 
 main :: IO ()
 main = defaultMain $ testGroup "0. ./src/WhileParser.hs" [tokenizerTest0, parserTest0]
@@ -49,7 +64,7 @@ tokenizerTest0 = testGroup "tokenizer" [
      MetaToken 5 (ConstToken 1),
      MetaToken 5 EndToken]
 
-  , testCase "tokenize .while file" $ show (10 + 10) @?= "20"
+  , testCase "tokenize .while file" $ (show (10 + 10) :: String) @?= "20"
   -- whileLines <- readFileContent "./examples/foo.while"
   -- let tokens = tokenize whileLines
   ]
@@ -66,11 +81,11 @@ parserTest0 = testGroup "parser" [
            (5, "loop 8 do i := i + 1 end")])
       @?=
         Sequential
-                (Assignment "x_1" (Constant 10))
-                (Sequential
-                        (While
-                                (Neq (Variable "x") (Constant 0))
-                                (Assignment "x" (Subtract (Variable "x") (Constant 1))))
-                        (Loop
-                                (Constant 8) (Assignment "i" (Add (Variable "i") (Constant 1)))))
+          (Assignment "x_1" (Constant 10))
+          (Sequential
+            (While
+              (Neq (Variable "x") (Constant 0))
+              (Assignment "x" (Subtract (Variable "x") (Constant 1))))
+            (Loop
+              (Constant 8) (Assignment "i" (Add (Variable "i") (Constant 1)))))
   ]

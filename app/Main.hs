@@ -6,12 +6,12 @@ module Main (main) where
 import System.Environment (getArgs)
 
 import WhileParser (tokenize, readFileContent, runASTParser)  -- WhileAST(..),
-import WhileEvaluation (eval, evalT, evalM, getVST, runEvalM)
-  --, evalM, VarName, VarVal, VarState, VarStateWorld)
+import WhileEvaluation (eval, evalT, evalM, getVarState, runEvalM)
+  -- VarName, VarVal, VarState, VarStateWorld)
 
 
 -- | Define a data type to represent the command-line options
-newtype Options = Options { getFileName :: FilePath }
+newtype Options = Options { getFileName :: FilePath } deriving Show
 
 
 -- | Parse command-line arguments manually
@@ -26,31 +26,21 @@ runInterpreter options = do
 
   putStrLn $ "\ESC[92m[Interpreting file]\ESC[0m    " ++ getFileName options
 
-  -- Read the content of the specified file
-  whileLines <- readFileContent $ getFileName options
-  let tokens = tokenize whileLines
-
-  putStrLn "\ESC[92m[DONE TOKENIZE]\ESC[0m"
-  -- print tokens
-
-  let ast = runASTParser tokens
-  putStrLn "\ESC[92m[DONE PARSING AST]\ESC[0m"
-  -- print ast
-
-  putStrLn "\ESC[92m[RESULT OF EVALUATION]\ESC[0m"
+  --      ast              tokens       lines of code     file name
+  ast <- runASTParser . tokenize <$> (readFileContent . getFileName) options
 
   -- print $ eval ast []  -- eval v1
   -- print $ evalT ast []  -- eval v2
 
   let program = evalM ast  -- Monad eval
-  print $ getVST program []
+  print $ getVarState program []
 
   -- eg.
-  -- let program2 = evalM ast >> evalM ast
-  -- print $ getVST program2 []
+  --  let program2 = evalM ast_1 >> evalM ast_2 >> ...
+  --  print $ getVarState program2 []
 
   -- or use:
-  -- print $ runEvalM ast []
+  --  print $ runEvalM ast []
 
   putStrLn $ "\n" ++ concat (replicate 40 "= ") ++ "=\n"
 

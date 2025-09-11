@@ -162,6 +162,29 @@ or use
 stack ghci
 #+end_src
 
+#+begin_src haskell
+--      ast              tokens       lines of code     file name
+ast <- runASTParser . tokenize <$> readFileContent "./filename.wile"
+
+-- print $ eval ast []  -- eval v1
+-- print $ evalT ast []  -- eval v2
+
+let program = evalM ast  -- Monad eval
+print $ getVarState program []
+
+-- eg.
+--
+--  let program2 = evalM ast_1 >> evalM ast_2 >> ...
+--  print $ getVarState program2 []
+--
+-- where `ast_1` could set global vars and `ast_2` could
+--  contain a script using the global vars ...
+
+
+-- or use:
+--  print $ runEvalM ast []
+#+end_src
+
 
 *** compile
 

@@ -39,17 +39,17 @@ infixl 1 >>>=
 vst >>>= f = uncurry f . vst
 
 -- | Variable State Monade
-newtype VarStateM a = VarStateM { getVST :: VarStateT a } deriving Functor
+newtype VarStateM a = VarStateM { getVarState :: VarStateT a } deriving Functor
 
 instance Applicative VarStateM where
   pure x = VarStateM (x,)
 
-  vstf <*> vst = VarStateM (getVST vstf
-                            >>>= \f -> getVST vst
-                            >>>= \x -> getVST (pure (f x)))
+  vstf <*> vst = VarStateM (getVarState vstf
+                            >>>= \f -> getVarState vst
+                            >>>= \x -> getVarState (pure (f x)))
 
 instance Monad VarStateM where
-  vst >>= f = VarStateM (getVST vst >>>= getVST . f)
+  vst >>= f = VarStateM (getVarState vst >>>= getVarState . f)
 
 
 -- getState :: VarStateM VarStateWorld
@@ -129,4 +129,4 @@ evalM = VarStateM . evalT
 
 
 runEvalM :: WhileAST -> VarStateWorld -> ((), VarStateWorld)
-runEvalM ast = getVST $ evalM ast
+runEvalM ast = getVarState $ evalM ast
